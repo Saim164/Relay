@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const userRoutes = require("./routes/userRoute.js");
+const { apiLimiter } = require("./middleware/rateLimiters.js");
 const errorHandler = require("./middleware/errorHandler.js");
 
 dotenv.config();
@@ -22,7 +23,8 @@ app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 
-app.use("/api/users", userRoutes);
+app.use("/api/v1", apiLimiter);
+app.use("/api/v1/users", userRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
