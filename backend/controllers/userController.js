@@ -1,8 +1,18 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/userModel.js");
 const jwt = require("jsonwebtoken");
+const { z } = require("zod");
 
-const emailPattern = /^\S+@\S+\.\S+$/;
+const registerSchema = z.object({
+    username: z.string().trim().min(3, "Username must be between 3 and 20 characters").max(20, "Username must be between 3 and 20 characters"),
+    email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+const loginSchema = z.object({
+    email: z.string().trim().toLowerCase().min(1, "All fields are required").email("Enter a valid email address"),
+    password: z.string().min(1, "All fields are required"),
+});
 
 const toPublicUser = (user) => ({
     id: user._id,
@@ -12,27 +22,17 @@ const toPublicUser = (user) => ({
 
 const register = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
-        const normalizedUsername = typeof username === "string" ? username.trim() : "";
-        const normalizedEmail = typeof email === "string" ? email.toLowerCase().trim() : "";
-
-        if (!normalizedUsername || !normalizedEmail || typeof password !== "string") {
-            return res.status(400).json({ message: "All fields are required" });
+        const validation = registerSchema.safeParse(req.body);
+        if (!validation.success) {
+            const body = req.body && typeof req.body === "object" ? req.body : {};
+            const missingFields = ["username", "email", "password"].some((field) => !Object.hasOwn(body, field));
+            const message = missingFields ? "All fields are required" : validation.error.issues[0].message;
+            return res.status(400).json({ message });
         }
 
-        if (normalizedUsername.length < 3 || normalizedUsername.length > 20) {
-            return res.status(400).json({ message: "Username must be between 3 and 20 characters" });
-        }
+        const { username, email, password } = validation.data;
 
-        if (!emailPattern.test(normalizedEmail)) {
-            return res.status(400).json({ message: "Enter a valid email address" });
-        }
-
-        if (password.length < 8) {
-            return res.status(400).json({ message: "Password must be at least 8 characters" });
-        }
-
-        const existingUser = await User.findOne({ email: normalizedEmail });
+        const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
         }
@@ -41,8 +41,8 @@ const register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         const newUser = new User({
-            username: normalizedUsername,
-            email: normalizedEmail,
+            username,
+            email,
             password: hashedPassword,
         });
         await newUser.save();
@@ -60,15 +60,14 @@ const register = async (req, res) => {
 
 
 const login = async (req, res) => {
-    const { email, password } = req.body;
-
     try {
-        if (typeof email !== "string" || typeof password !== "string" || !email.trim() || !password) {
-            return res.status(400).json({ message: "All fields are required" });
+        const validation = loginSchema.safeParse(req.body);
+        if (!validation.success) {
+            return res.status(400).json({ message: validation.error.issues[0].message });
         }
 
-        const normalizedEmail = email.toLowerCase().trim();
-        const user = await User.findOne({ email: normalizedEmail });
+        const { email, password } = validation.data;
+        const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
@@ -81,6 +80,13 @@ const login = async (req, res) => {
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
             expiresIn: "3d",
+        });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 3 * 24 * 60 * 60 * 1000,
         });
 
         return res.status(200).json({

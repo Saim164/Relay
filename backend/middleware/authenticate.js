@@ -3,12 +3,14 @@ const User = require("../models/userModel.js");
 
 const authenticate = async (req, res, next) => {
     const authorization = req.headers.authorization;
+    const headerToken = authorization?.startsWith("Bearer ")
+        ? authorization.slice(7)
+        : null;
+    const token = headerToken || req.cookies?.token;
 
-    if (!authorization?.startsWith("Bearer ")) {
+    if (!token) {
         return res.status(401).json({ message: "Authentication required" });
     }
-
-    const token = authorization.slice(7);
 
     try {
         const payload = jwt.verify(token, process.env.JWT_SECRET);

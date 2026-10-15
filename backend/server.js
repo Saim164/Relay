@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const rateLimit = require("express-rate-limit");
+const cookieParser = require("cookie-parser");
 const userRoutes = require("./routes/userRoute.js");
 
 dotenv.config();
@@ -17,8 +18,9 @@ if (!process.env.MONGO_URL || !process.env.JWT_SECRET) {
 }
 
 app.use(helmet());
-app.use(cors({ origin: allowedOrigin }));
+app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json({ limit: "10kb" }));
+app.use(cookieParser());
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
