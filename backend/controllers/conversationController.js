@@ -9,4 +9,9 @@ const start = async (req, res) => {
     return res.status(200).json({ conversation });
 };
 
-module.exports = { start };
+const list = async (req, res) => {
+    const conversations = await conversationService.getUserConversations(req.user._id);
+    return res.status(200).json({ conversations });
+};
+
+module.exports = { start, list };

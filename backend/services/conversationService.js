@@ -55,7 +55,6 @@ const startConversation = async (myId, otherUserId) => {
                 throw error;
             }
 
-            // Another request may have created this pair at the same time.
             conversation = await conversationRepository.findByKey(participantsKey);
             if (!conversation) {
                 throw error;
@@ -66,4 +65,9 @@ const startConversation = async (myId, otherUserId) => {
     return toPublic(conversation, myId);
 };
 
-module.exports = { startConversation, makeKey, toPublic };
+const getUserConversations = async (myId) => {
+    const conversations = await conversationRepository.findByParticipant(myId);
+    return conversations.map((conversation) => toPublic(conversation, myId));
+};
+
+module.exports = { startConversation, getUserConversations, makeKey, toPublic };

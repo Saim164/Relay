@@ -14,4 +14,8 @@ const create = async (data) => {
 
 const findById = (id) => withPublicParticipants(Conversation.findById(id));
 
-module.exports = { findByKey, create, findById };
+const findByParticipant = (userId) => withPublicParticipants(
+    Conversation.find({ participants: userId }).sort({ updatedAt: -1 })
+);
+
+module.exports = { findByKey, create, findById, findByParticipant };
