@@ -1,16 +1,11 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const userRepository = require("../repositories/userRepository.js");
+const { toPublicUser } = require("./userService.js");
 
 const TOKEN_LIFETIME = "3d";
 const SALT_ROUNDS = 10;
 const DUMMY_PASSWORD_HASH = "$2b$10$bskAnezvMFXjG/C7hfoVgezCTmiZMzIgouHpDF.qdwaJkuUvV6s4.";
-
-const toPublicUser = (user) => ({
-    id: user._id,
-    username: user.username,
-    email: user.email,
-});
 
 const register = async ({ username, email, password }) => {
     const existingUser = await userRepository.findByEmail(email);
@@ -42,4 +37,4 @@ const login = async ({ email, password }) => {
     return { token, user: toPublicUser(user) };
 };
 
-module.exports = { register, login, toPublicUser };
+module.exports = { register, login };

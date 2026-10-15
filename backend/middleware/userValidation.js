@@ -11,4 +11,8 @@ const loginSchema = z.object({
     password: z.string().min(1, "All fields are required"),
 });
 
-module.exports = { registerSchema, loginSchema };
+const searchUsersSchema = z.object({
+    username: z.string().trim().min(1, "Enter a username to search").max(20, "Search must be 20 characters or fewer"),
+});
+
+module.exports = { registerSchema, loginSchema, searchUsersSchema };

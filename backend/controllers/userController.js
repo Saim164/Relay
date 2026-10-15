@@ -1,4 +1,5 @@
 const authService = require("../services/authService.js");
+const userService = require("../services/userService.js");
 
 const register = async (req, res) => {
     await authService.register(req.validatedBody);
@@ -19,7 +20,12 @@ const login = async (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-    return res.status(200).json({ user: authService.toPublicUser(req.user) });
+    return res.status(200).json({ user: userService.toPublicUser(req.user) });
 };
 
-module.exports = { register, login, getCurrentUser };
+const searchUsers = async (req, res) => {
+    const users = await userService.searchUsers(req.validatedQuery.username, req.user._id);
+    return res.status(200).json({ users });
+};
+
+module.exports = { register, login, getCurrentUser, searchUsers };
