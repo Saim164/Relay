@@ -2,6 +2,8 @@ const User = require("../models/userModel.js");
 
 const findByEmail = (email) => User.findOne({ email });
 
+const findById = (id) => User.findById(id);
+
 const findPublicById = (id) => User.findById(id).select("-password");
 
 const searchByUsername = (username, excludedUserId) => {
@@ -21,4 +23,4 @@ const create = async (userData) => {
     return user.save();
 };
 
-module.exports = { findByEmail, findPublicById, searchByUsername, create };
+module.exports = { findByEmail, findById, findPublicById, searchByUsername, create };

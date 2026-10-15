@@ -15,4 +15,8 @@ const searchUsersSchema = z.object({
     username: z.string().trim().min(1, "Enter a username to search").max(20, "Search must be 20 characters or fewer"),
 });
 
-module.exports = { registerSchema, loginSchema, searchUsersSchema };
+const conversationSchema = z.object({
+    userId: z.string().regex(/^[0-9a-fA-F]{24}$/, "userId must be a 24-character MongoDB ObjectId"),
+});
+
+module.exports = { registerSchema, loginSchema, searchUsersSchema, conversationSchema };

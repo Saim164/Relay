@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const userRoutes = require("./routes/userRoute.js");
+const conversationRoutes = require("./routes/conversationRoutes.js");
 const { apiLimiter } = require("./middleware/rateLimiters.js");
 const errorHandler = require("./middleware/errorHandler.js");
 
@@ -25,6 +26,7 @@ app.use(cookieParser());
 
 app.use("/api/v1", apiLimiter);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/conversations", apiLimiter, conversationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
