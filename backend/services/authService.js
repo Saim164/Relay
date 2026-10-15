@@ -4,6 +4,7 @@ const userRepository = require("../repositories/userRepository.js");
 
 const TOKEN_LIFETIME = "3d";
 const SALT_ROUNDS = 10;
+const DUMMY_PASSWORD_HASH = "$2b$10$bskAnezvMFXjG/C7hfoVgezCTmiZMzIgouHpDF.qdwaJkuUvV6s4.";
 
 const toPublicUser = (user) => ({
     id: user._id,
@@ -25,9 +26,10 @@ const register = async ({ username, email, password }) => {
 
 const login = async ({ email, password }) => {
     const user = await userRepository.findByEmail(email);
-    const passwordMatches = user && await bcrypt.compare(password, user.password);
+    const passwordHash = user ? user.password : DUMMY_PASSWORD_HASH;
+    const passwordMatches = await bcrypt.compare(password, passwordHash);
 
-    if (!passwordMatches) {
+    if (!user || !passwordMatches) {
         const error = new Error("Invalid email or password");
         error.statusCode = 401;
         throw error;
