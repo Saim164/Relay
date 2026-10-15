@@ -88,4 +88,4 @@ const getConversationForUser = async (conversationId, userId) => {
     return conversation;
 };
 
-module.exports = { startConversation, getUserConversations, getConversationForUser, makeKey, toPublic };
+module.exports = { startConversation, getUserConversations, getConversationForUser, makeKey, toPublic, createError };

@@ -10,4 +10,13 @@ const send = async (req, res) => {
     return res.status(201).json({ message });
 };
 
-module.exports = { send };
+const list = async (req, res) => {
+    const result = await messageService.getMessages(req.params.id, req.user._id, {
+        before: req.query.before,
+        limit: req.query.limit,
+    });
+
+    return res.status(200).json(result);
+};
+
+module.exports = { send, list };
