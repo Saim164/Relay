@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/userModel.js");
+const userRepository = require("../repositories/userRepository.js");
 
 const authenticate = async (req, res, next) => {
     const authorization = req.headers.authorization;
@@ -12,19 +12,20 @@ const authenticate = async (req, res, next) => {
         return res.status(401).json({ message: "Authentication required" });
     }
 
+    let payload;
     try {
-        const payload = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(payload.id).select("-password");
-
-        if (!user) {
-            return res.status(401).json({ message: "Authentication required" });
-        }
-
-        req.user = user;
-        next();
-    } catch (error) {
+        payload = jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
         return res.status(401).json({ message: "Invalid or expired token" });
     }
+
+    const user = await userRepository.findPublicById(payload.id);
+    if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+    }
+
+    req.user = user;
+    return next();
 };
 
 module.exports = authenticate;
