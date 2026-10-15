@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const conversationRepository = require("../repositories/conversationRepository.js");
 const userRepository = require("../repositories/userRepository.js");
 
@@ -70,4 +71,21 @@ const getUserConversations = async (myId) => {
     return conversations.map((conversation) => toPublic(conversation, myId));
 };
 
-module.exports = { startConversation, getUserConversations, makeKey, toPublic };
+const getConversationForUser = async (conversationId, userId) => {
+    if (!mongoose.isValidObjectId(conversationId) || !/^[a-f\d]{24}$/i.test(conversationId)) {
+        throw createError("Conversation not found", 404);
+    }
+
+    const conversation = await conversationRepository.findById(conversationId);
+    const isParticipant = conversation?.participants.some(
+        (participant) => String(participant._id) === String(userId)
+    );
+
+    if (!conversation || !isParticipant) {
+        throw createError("Conversation not found", 404);
+    }
+
+    return conversation;
+};
+
+module.exports = { startConversation, getUserConversations, getConversationForUser, makeKey, toPublic };

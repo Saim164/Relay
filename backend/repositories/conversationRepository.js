@@ -18,4 +18,10 @@ const findByParticipant = (userId) => withPublicParticipants(
     Conversation.find({ participants: userId }).sort({ updatedAt: -1 })
 );
 
-module.exports = { findByKey, create, findById, findByParticipant };
+const updateLastMessage = (conversationId, lastMessage) => Conversation.findByIdAndUpdate(
+    conversationId,
+    { $set: { lastMessage } },
+    { new: true, runValidators: true }
+);
+
+module.exports = { findByKey, create, findById, findByParticipant, updateLastMessage };

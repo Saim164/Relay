@@ -19,4 +19,11 @@ const conversationSchema = z.object({
     userId: z.string().regex(/^[0-9a-fA-F]{24}$/, "userId must be a 24-character MongoDB ObjectId"),
 });
 
-module.exports = { registerSchema, loginSchema, searchUsersSchema, conversationSchema };
+const messageSchema = z.object({
+    text: z.string()
+        .trim()
+        .min(1, "Message text cannot be empty")
+        .max(2000, "Message text must be 2000 characters or fewer"),
+});
+
+module.exports = { registerSchema, loginSchema, searchUsersSchema, conversationSchema, messageSchema };
