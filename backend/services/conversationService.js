@@ -1,16 +1,11 @@
 const mongoose = require("mongoose");
 const conversationRepository = require("../repositories/conversationRepository.js");
 const userRepository = require("../repositories/userRepository.js");
+const createError = require("../utils/createError.js");
 
 const makeKey = (a, b) => [String(a), String(b)].sort().join("_");
 
-const createError = (message, statusCode) => {
-    const error = new Error(message);
-    error.statusCode = statusCode;
-    return error;
-};
-
-const toPublic = (conversation, myId) => {
+const toPublicConversation = (conversation, myId) => {
     const otherUser = conversation.participants.find(
         (participant) => String(participant._id) !== String(myId)
     );
@@ -63,12 +58,12 @@ const startConversation = async (myId, otherUserId) => {
         }
     }
 
-    return toPublic(conversation, myId);
+    return toPublicConversation(conversation, myId);
 };
 
 const getUserConversations = async (myId) => {
     const conversations = await conversationRepository.findByParticipant(myId);
-    return conversations.map((conversation) => toPublic(conversation, myId));
+    return conversations.map((conversation) => toPublicConversation(conversation, myId));
 };
 
 const getConversationForUser = async (conversationId, userId) => {
@@ -88,4 +83,10 @@ const getConversationForUser = async (conversationId, userId) => {
     return conversation;
 };
 
-module.exports = { startConversation, getUserConversations, getConversationForUser, makeKey, toPublic, createError };
+module.exports = {
+    startConversation,
+    getUserConversations,
+    getConversationForUser,
+    makeKey,
+    toPublicConversation,
+};

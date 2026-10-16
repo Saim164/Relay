@@ -24,9 +24,9 @@ app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 
-app.use("/api/v1", apiLimiter);
+app.use("/api", apiLimiter);
 app.use("/api/v1/users", userRoutes);
-app.use("/api/conversations", apiLimiter, conversationRoutes);
+app.use("/api/conversations", conversationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });

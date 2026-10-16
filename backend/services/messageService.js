@@ -1,6 +1,7 @@
 const conversationRepository = require("../repositories/conversationRepository.js");
 const messageRepository = require("../repositories/messageRepository.js");
-const { getConversationForUser, createError } = require("./conversationService.js");
+const { getConversationForUser } = require("./conversationService.js");
+const createError = require("../utils/createError.js");
 
 const toPublicMessage = (message) => ({
     id: String(message._id),
