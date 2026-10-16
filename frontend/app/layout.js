@@ -3,7 +3,8 @@ import Navbar from "../components/Navbar.js";
 
 export const metadata = {
   title: "Relay",
-  description: "Good conversations, flowing.",
+  description:
+    "Relay is an evolving portfolio and learning project for building a modern messaging app.",
 };
 
 export default function RootLayout({ children }) {
