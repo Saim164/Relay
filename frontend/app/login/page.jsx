@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { API_V1_URL } from "../../lib/api.js";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,8 +20,7 @@ export default function LoginPage() {
     setErrorMessage("");
     setSuccessMessage("");
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!apiUrl) {
+    if (!API_V1_URL) {
       setErrorMessage("The API URL is not configured.");
       return;
     }
@@ -33,7 +33,7 @@ export default function LoginPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${apiUrl}/users/${isSignUp ? "register" : "login"}`, {
+      const response = await fetch(`${API_V1_URL}/users/${isSignUp ? "register" : "login"}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
