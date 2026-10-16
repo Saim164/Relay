@@ -1,24 +1,42 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import DashboardShell from "../../components/DashboardShell.jsx";
-import { API_V1_URL, apiRequest } from "../../lib/api.js";
+import { apiRequest } from "../../lib/api.js";
 
-export default async function DashboardLayout({ children }) {
-  const token = (await cookies()).get("token")?.value;
-  if (!token) redirect("/login");
+export default function DashboardLayout({ children }) {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [status, setStatus] = useState("loading");
 
-  if (!API_V1_URL) {
-    return <StatusMessage>Dashboard could not connect to the API.</StatusMessage>;
+  useEffect(() => {
+    let isActive = true;
+
+    apiRequest("/users/me", { cache: "no-store" })
+      .then(({ user: currentUser }) => {
+        if (!isActive) return;
+        setUser(currentUser);
+        setStatus("ready");
+      })
+      .catch((error) => {
+        if (!isActive) return;
+        if (error.status === 401) {
+          router.replace("/login");
+          return;
+        }
+        setStatus("error");
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [router]);
+
+  if (status === "loading") {
+    return <StatusMessage>Checking your session...</StatusMessage>;
   }
-
-  let user;
-  try {
-    ({ user } = await apiRequest("/users/me", {
-      headers: { Cookie: `token=${token}` },
-      cache: "no-store",
-    }));
-  } catch (error) {
-    if (error.status === 401) redirect("/login");
+  if (status === "error") {
     return <StatusMessage>Could not verify your session. Please try again.</StatusMessage>;
   }
 

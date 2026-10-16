@@ -4,7 +4,7 @@ const userService = require("../services/userService.js");
 const authCookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
 };
 
 const register = async (req, res) => {

@@ -52,7 +52,7 @@ export default function LoginPage() {
         setIsSignUp(false);
         setSuccessMessage("Your account is ready. Log in to continue.");
       } else {
-        router.push("/dashboard");
+        router.replace("/dashboard");
       }
     } catch (error) {
       setErrorMessage(error.message || "Unable to connect. Please try again.");
