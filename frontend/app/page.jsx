@@ -1,11 +1,8 @@
-import Navbar from "../components/Navbar.js";
 import Link from "next/link";
 
 export default function Home() {
   return (
-    <>
-      <Navbar />
-      <main className="flex min-h-[calc(100svh-4rem)] items-center justify-center px-6 py-20">
+    <main className="flex min-h-[calc(100svh-4rem)] items-center justify-center px-6 py-20">
         <section className="-mt-10 w-full max-w-3xl text-center">
           <h1 className="text-5xl font-semibold leading-[1.08] tracking-[-0.055em] text-neutral-950 sm:text-6xl md:text-7xl">
             A clearer way to
@@ -26,7 +23,6 @@ export default function Home() {
             Start a conversation
           </Link>
         </section>
-      </main>
-    </>
+    </main>
   );
 }
