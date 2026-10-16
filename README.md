@@ -19,7 +19,7 @@ Relay is a portfolio and learning project focused on building a modern messaging
 
 1. Configure the backend environment with `MONGO_URL`, `JWT_SECRET`, and `CLIENT_URL`.
 2. In `backend/`, install dependencies and run `npm run dev`.
-3. Set `NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1` in `frontend/.env.local`.
+3. Set `NEXT_PUBLIC_API_URL=http://localhost:5000` in `frontend/.env.local`.
 4. In `frontend/`, install dependencies and run `npm run dev`.
 5. Open `http://localhost:3000`.
 

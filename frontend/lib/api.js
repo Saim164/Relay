@@ -1,5 +1,7 @@
-export const API_V1_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-export const API_ROOT_URL = API_V1_URL?.replace(/\/v1$/, "");
+const API_ORIGIN = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+
+export const API_V1_URL = API_ORIGIN ? `${API_ORIGIN}/api/v1` : undefined;
+export const API_ROOT_URL = API_ORIGIN ? `${API_ORIGIN}/api` : undefined;
 
 export async function apiRequest(path, { base = API_V1_URL, ...options } = {}) {
   if (!base) throw new Error("API URL is not configured.");
