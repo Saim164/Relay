@@ -20,7 +20,7 @@ if (!process.env.MONGO_URL || !process.env.JWT_SECRET) {
 }
 
 app.use(helmet());
-app.use(cors({ origin: allowedOrigin, credentials: true }));
+app.use(cors({ origin: [allowedOrigin, "http://localhost:3000"], credentials: true }));
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 
