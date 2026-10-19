@@ -3,18 +3,13 @@ const conversationRepository = require("../repositories/conversationRepository.j
 const userRepository = require("../repositories/userRepository.js");
 const createError = require("../utils/createError.js");
 
-const makeKey = (a, b) => [String(a), String(b)].sort().join("_");
+// The same two users always produce the same key, whatever the order.
+const makeParticipantsKey = (a, b) => [String(a), String(b)].sort().join("_");
 
 const toPublicConversation = (conversation, myId) => {
     const otherUser = conversation.participants.find(
         (participant) => String(participant._id) !== String(myId)
     );
-    const lastMessage = conversation.lastMessage;
-    const hasLastMessage = lastMessage && [
-        lastMessage.text,
-        lastMessage.sender,
-        lastMessage.createdAt,
-    ].some((value) => value != null);
 
     return {
         id: conversation._id,
@@ -22,7 +17,7 @@ const toPublicConversation = (conversation, myId) => {
             id: otherUser._id,
             username: otherUser.username,
         },
-        lastMessage: hasLastMessage ? lastMessage : null,
+        lastMessage: conversation.lastMessage?.text ? conversation.lastMessage : null,
         updatedAt: conversation.updatedAt,
     };
 };
@@ -32,12 +27,12 @@ const startConversation = async (myId, otherUserId) => {
         throw createError("You can't start a chat with yourself", 400);
     }
 
-    const otherUser = await userRepository.findById(otherUserId);
+    const otherUser = await userRepository.findPublicById(otherUserId);
     if (!otherUser) {
         throw createError("User not found", 404);
     }
 
-    const participantsKey = makeKey(myId, otherUserId);
+    const participantsKey = makeParticipantsKey(myId, otherUserId);
     let conversation = await conversationRepository.findByKey(participantsKey);
 
     if (!conversation) {
@@ -47,14 +42,12 @@ const startConversation = async (myId, otherUserId) => {
                 participantsKey,
             });
         } catch (error) {
+            // Both users clicked "start chat" at the same moment: the other request
+            // created it first, so just load that one.
             if (error.code !== 11000) {
                 throw error;
             }
-
             conversation = await conversationRepository.findByKey(participantsKey);
-            if (!conversation) {
-                throw error;
-            }
         }
     }
 
@@ -66,8 +59,10 @@ const getUserConversations = async (myId) => {
     return conversations.map((conversation) => toPublicConversation(conversation, myId));
 };
 
+// Returns 404 (not 403) when the user isn't a participant, so nobody can tell
+// whether someone else's conversation id exists.
 const getConversationForUser = async (conversationId, userId) => {
-    if (!mongoose.isValidObjectId(conversationId) || !/^[a-f\d]{24}$/i.test(conversationId)) {
+    if (!mongoose.isObjectIdOrHexString(conversationId)) {
         throw createError("Conversation not found", 404);
     }
 
@@ -76,17 +71,11 @@ const getConversationForUser = async (conversationId, userId) => {
         (participant) => String(participant._id) === String(userId)
     );
 
-    if (!conversation || !isParticipant) {
+    if (!isParticipant) {
         throw createError("Conversation not found", 404);
     }
 
     return conversation;
 };
 
-module.exports = {
-    startConversation,
-    getUserConversations,
-    getConversationForUser,
-    makeKey,
-    toPublicConversation,
-};
+module.exports = { startConversation, getUserConversations, getConversationForUser };

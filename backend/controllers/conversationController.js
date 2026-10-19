@@ -1,6 +1,6 @@
 const conversationService = require("../services/conversationService.js");
 
-const start = async (req, res) => {
+const startConversation = async (req, res) => {
     const conversation = await conversationService.startConversation(
         req.user._id,
         req.validatedBody.userId
@@ -9,9 +9,9 @@ const start = async (req, res) => {
     return res.status(200).json({ conversation });
 };
 
-const list = async (req, res) => {
+const listConversations = async (req, res) => {
     const conversations = await conversationService.getUserConversations(req.user._id);
     return res.status(200).json({ conversations });
 };
 
-module.exports = { start, list };
+module.exports = { startConversation, listConversations };

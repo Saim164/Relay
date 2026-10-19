@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const userRepository = require("../repositories/userRepository.js");
+const createError = require("../utils/createError.js");
 
+// Accepts the HTTP-only "token" cookie, or an "Authorization: Bearer <token>" header.
 const authenticate = async (req, res, next) => {
     const authorization = req.headers.authorization;
     const headerToken = authorization?.startsWith("Bearer ")
@@ -9,19 +11,19 @@ const authenticate = async (req, res, next) => {
     const token = headerToken || req.cookies?.token;
 
     if (!token) {
-        return res.status(401).json({ message: "Authentication required" });
+        throw createError("Authentication required", 401);
     }
 
     let payload;
     try {
         payload = jwt.verify(token, process.env.JWT_SECRET);
     } catch {
-        return res.status(401).json({ message: "Invalid or expired token" });
+        throw createError("Invalid or expired token", 401);
     }
 
     const user = await userRepository.findPublicById(payload.id);
     if (!user) {
-        return res.status(401).json({ message: "Authentication required" });
+        throw createError("Authentication required", 401);
     }
 
     req.user = user;

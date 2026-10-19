@@ -1,11 +1,18 @@
 const authService = require("../services/authService.js");
 const userService = require("../services/userService.js");
 
+const isProduction = process.env.NODE_ENV === "production";
+
+// In production the frontend (Vercel) and API (Render) are on different sites,
+// so the cookie must be SameSite=None, which browsers only accept with Secure.
+// Logout must clear the cookie with these same options or the browser keeps it.
 const authCookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
 };
+
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
 const register = async (req, res) => {
     await authService.register(req.validatedBody);
@@ -15,10 +22,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     const { token, user } = await authService.login(req.validatedBody);
 
-    res.cookie("token", token, {
-        ...authCookieOptions,
-        maxAge: 3 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, { ...authCookieOptions, maxAge: THREE_DAYS_MS });
 
     return res.status(200).json({ message: "Login successful", token, user });
 };

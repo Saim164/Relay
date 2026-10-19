@@ -1,12 +1,12 @@
 const User = require("../models/userModel.js");
 
+// Includes the password hash: only use this for checking a login.
 const findByEmail = (email) => User.findOne({ email });
-
-const findById = (id) => User.findById(id);
 
 const findPublicById = (id) => User.findById(id).select("-password");
 
 const searchByUsername = (username, excludedUserId) => {
+    // Escape regex characters so a search like "a.b" matches literally.
     const escapedUsername = username.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     return User.find({
@@ -18,9 +18,6 @@ const searchByUsername = (username, excludedUserId) => {
         .limit(20);
 };
 
-const create = async (userData) => {
-    const user = new User(userData);
-    return user.save();
-};
+const create = (userData) => User.create(userData);
 
-module.exports = { findByEmail, findById, findPublicById, searchByUsername, create };
+module.exports = { findByEmail, findPublicById, searchByUsername, create };

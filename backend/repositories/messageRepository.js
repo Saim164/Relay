@@ -1,10 +1,8 @@
-const Message = require("../models/message.Model.js");
+const Message = require("../models/messageModel.js");
 
-const create = (data) => {
-    const message = new Message(data);
-    return message.save();
-};
+const create = (data) => Message.create(data);
 
+// Newest first, so `limit` picks the most recent messages before `before`.
 const findByConversation = (conversationId, { before, limit }) => {
     const filter = { conversation: conversationId };
     if (before) {
@@ -13,7 +11,7 @@ const findByConversation = (conversationId, { before, limit }) => {
 
     return Message.find(filter)
         .sort({ createdAt: -1, _id: -1 })
-        .limit(limit + 1);
+        .limit(limit);
 };
 
 module.exports = { create, findByConversation };

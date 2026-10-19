@@ -1,23 +1,21 @@
 const router = require("express").Router();
-const { start, list } = require("../controllers/conversationController.js");
-const { send, list: listMessages } = require("../controllers/messageController.js");
+const { startConversation, listConversations } = require("../controllers/conversationController.js");
+const { sendMessage, listMessages } = require("../controllers/messageController.js");
 const authenticate = require("../middleware/authenticate.js");
-const validateRequest = require("../middleware/validateRequest.js");
-const { conversationSchema, messageSchema } = require("../middleware/userValidation.js");
+const {
+    validateBody,
+    validateQuery,
+    startConversationSchema,
+    sendMessageSchema,
+    listMessagesSchema,
+} = require("../middleware/validation.js");
 
-router.get("/", authenticate, list);
-router.post(
-    "/",
-    authenticate,
-    validateRequest(conversationSchema, ["userId"]),
-    start
-);
-router.post(
-    "/:id/messages",
-    authenticate,
-    validateRequest(messageSchema, ["text"]),
-    send
-);
-router.get("/:id/messages", authenticate, listMessages);
+// Every conversation route needs a logged-in user.
+router.use(authenticate);
+
+router.get("/", listConversations);
+router.post("/", validateBody(startConversationSchema), startConversation);
+router.get("/:id/messages", validateQuery(listMessagesSchema), listMessages);
+router.post("/:id/messages", validateBody(sendMessageSchema), sendMessage);
 
 module.exports = router;
