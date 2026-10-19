@@ -1,42 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { API_ROOT_URL, API_V1_URL, apiRequest } from "../lib/api.js";
+import { apiRequest } from "../lib/api.js";
 
 const MIN_SEARCH_LENGTH = 3;
 
-export default function DashboardSidebar({ selectedConversation, onOpenConversation }) {
+// The chat list itself is owned by app/dashboard/layout.jsx; this component only shows it.
+export default function DashboardSidebar({ chats, activeConversationId, onChatStarted }) {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [search, setSearch] = useState({ term: "", users: [], loading: false, error: "" });
-  const [chats, setChats] = useState({ items: [], loading: true, error: "" });
   const [openingUserId, setOpeningUserId] = useState("");
   const [openError, setOpenError] = useState("");
   const searchTerm = username.trim();
 
   useEffect(() => {
-    if (!API_ROOT_URL) return;
-
-    const controller = new AbortController();
-    apiRequest("/conversations", { base: API_ROOT_URL, signal: controller.signal })
-      .then(({ conversations }) => {
-        if (!controller.signal.aborted) {
-          setChats({ items: conversations || [], loading: false, error: "" });
-        }
-      })
-      .catch((error) => {
-        if (error.status === 401) router.replace("/login");
-        else if (!controller.signal.aborted) {
-          setChats({ items: [], loading: false, error: error.message });
-        }
-      });
-
-    return () => controller.abort();
-  }, [router]);
-
-  useEffect(() => {
-    if (searchTerm.length < MIN_SEARCH_LENGTH || !API_V1_URL) return;
+    if (searchTerm.length < MIN_SEARCH_LENGTH) return;
 
     const controller = new AbortController();
     const timer = setTimeout(async () => {
@@ -70,17 +51,12 @@ export default function DashboardSidebar({ selectedConversation, onOpenConversat
 
     try {
       const { conversation } = await apiRequest("/conversations", {
-        base: API_ROOT_URL,
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id }),
+        body: { userId: user.id },
       });
-      setChats((current) => ({
-        ...current,
-        items: [conversation, ...current.items.filter((chat) => chat.id !== conversation.id)],
-      }));
-      onOpenConversation(conversation);
+      onChatStarted(conversation);
       setUsername("");
+      router.push(`/dashboard/${conversation.id}`);
     } catch (error) {
       if (error.status === 401) router.replace("/login");
       else setOpenError(error.message);
@@ -90,7 +66,7 @@ export default function DashboardSidebar({ selectedConversation, onOpenConversat
   }
 
   return (
-    <aside className="w-full border-t border-neutral-200 bg-white px-5 py-6 lg:min-h-[calc(100svh-4rem)] lg:w-[30%] lg:min-w-[300px] lg:border-l lg:border-t-0 lg:px-6">
+    <aside className="h-full overflow-y-auto border-neutral-200 bg-white px-5 py-6 lg:border-l lg:px-6">
       <h2 className="text-lg font-semibold tracking-tight text-neutral-900">Messages</h2>
       <label htmlFor="user-search" className="sr-only">Search users by username</label>
       <input
@@ -109,11 +85,7 @@ export default function DashboardSidebar({ selectedConversation, onOpenConversat
         error={openError}
         onOpen={openConversation}
       />
-      <ChatList
-        chats={chats}
-        selectedConversation={selectedConversation}
-        onSelect={onOpenConversation}
-      />
+      <ChatList chats={chats} activeConversationId={activeConversationId} />
     </aside>
   );
 }
@@ -124,8 +96,6 @@ function PeopleSearch({ term, search, openingUserId, error, onOpen }) {
   let content;
   if (term.length < MIN_SEARCH_LENGTH) {
     content = <p className="py-2 text-sm text-neutral-500">Type at least 3 characters.</p>;
-  } else if (!API_V1_URL) {
-    content = <p className="py-2 text-sm text-red-700">API URL is not configured.</p>;
   } else if (search.term !== term || search.loading) {
     content = <p className="py-2 text-sm text-neutral-500">Searching...</p>;
   } else if (search.error) {
@@ -162,11 +132,9 @@ function PeopleSearch({ term, search, openingUserId, error, onOpen }) {
   );
 }
 
-function ChatList({ chats, selectedConversation, onSelect }) {
+function ChatList({ chats, activeConversationId }) {
   let content;
-  if (!API_ROOT_URL) {
-    content = <p className="py-2 text-sm text-red-700">API URL is not configured.</p>;
-  } else if (chats.loading) {
+  if (chats.loading) {
     content = <p className="py-2 text-sm text-neutral-500">Loading chats...</p>;
   } else if (chats.error) {
     content = <p role="alert" className="py-2 text-sm text-red-700">{chats.error}</p>;
@@ -176,25 +144,22 @@ function ChatList({ chats, selectedConversation, onSelect }) {
     content = (
       <ul className="space-y-1">
         {chats.items.map((chat) => {
-          const lastMessage = selectedConversation?.id === chat.id
-            ? selectedConversation.lastMessage
-            : chat.lastMessage;
+          const isActive = chat.id === activeConversationId;
 
           return (
             <li key={chat.id}>
-              <button
-                type="button"
-                onClick={() => onSelect(chat)}
-                aria-current={selectedConversation?.id === chat.id ? "true" : undefined}
-                className={`w-full rounded-lg px-3 py-3 text-left transition-colors ${
-                  selectedConversation?.id === chat.id ? "bg-neutral-100" : "hover:bg-neutral-50"
+              <Link
+                href={`/dashboard/${chat.id}`}
+                aria-current={isActive ? "page" : undefined}
+                className={`block w-full rounded-lg px-3 py-3 text-left transition-colors ${
+                  isActive ? "bg-neutral-100" : "hover:bg-neutral-50"
                 }`}
               >
                 <p className="text-sm font-medium text-neutral-900">{chat.otherUser.username}</p>
                 <p className="mt-1 truncate text-xs text-neutral-500">
-                  {lastMessage?.text || "No messages yet"}
+                  {chat.lastMessage?.text || "No messages yet"}
                 </p>
-              </button>
+              </Link>
             </li>
           );
         })}

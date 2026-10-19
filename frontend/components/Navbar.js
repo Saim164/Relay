@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { API_V1_URL } from "../lib/api.js";
+import { apiRequest } from "../lib/api.js";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -13,24 +13,13 @@ export default function Navbar() {
   const isDashboard = pathname?.startsWith("/dashboard");
 
   async function handleLogout() {
-    if (!API_V1_URL) {
-      setLogoutError("API URL is not configured.");
-      return;
-    }
-
     setIsLoggingOut(true);
     setLogoutError("");
     try {
-      const response = await fetch(`${API_V1_URL}/users/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Logout failed. Please try again.");
-
+      await apiRequest("/users/logout", { method: "POST" });
       router.replace("/login");
-      router.refresh();
     } catch (error) {
-      setLogoutError(error.message || "Unable to log out. Please try again.");
+      setLogoutError(error.message);
     } finally {
       setIsLoggingOut(false);
     }

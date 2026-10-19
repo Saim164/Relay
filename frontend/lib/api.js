@@ -1,21 +1,23 @@
-const API_ORIGIN = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+// All backend routes live under /api/v1 (users and conversations).
+// NEXT_PUBLIC_API_URL is just the backend origin, e.g. https://relay-api.onrender.com
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+  ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/api/v1`
+  : null;
 
-export const API_V1_URL = API_ORIGIN ? `${API_ORIGIN}/api/v1` : undefined;
-export const API_ROOT_URL = API_ORIGIN ? `${API_ORIGIN}/api` : undefined;
+// Every request goes through here so they all send the auth cookie
+// and fail the same way: an Error with the backend's message and HTTP status.
+export async function apiRequest(path, { method = "GET", body, signal } = {}) {
+  if (!API_URL) throw new Error("API URL is not configured.");
 
-export async function apiRequest(path, { base = API_V1_URL, ...options } = {}) {
-  if (!base) throw new Error("API URL is not configured.");
-
-  const response = await fetch(`${base}${path}`, {
+  const response = await fetch(`${API_URL}${path}`, {
+    method,
+    signal,
     credentials: "include",
-    ...options,
+    cache: "no-store",
+    headers: body ? { "Content-Type": "application/json" } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
   });
-  let result = {};
-  try {
-    result = await response.json();
-  } catch (error) {
-    if (error.name === "AbortError") throw error;
-  }
+  const result = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     const error = new Error(result.message || "Request failed. Please try again.");

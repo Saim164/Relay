@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { API_V1_URL } from "../../lib/api.js";
+import { apiRequest } from "../../lib/api.js";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
@@ -20,55 +19,32 @@ export default function LoginPage() {
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (!API_V1_URL) {
-      setErrorMessage("The API URL is not configured.");
-      return;
-    }
-
-    const body = {
-      email,
-      password,
-    };
-    if (isSignUp) body.username = name;
-
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${API_V1_URL}/users/${isSignUp ? "register" : "login"}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(body),
-      });
-      const result = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(result.message || "Request failed. Please try again.");
-      }
-
       if (isSignUp) {
-        setName("");
+        await apiRequest("/users/register", {
+          method: "POST",
+          body: { username, email, password },
+        });
+        setUsername("");
         setEmail("");
         setPassword("");
         setIsSignUp(false);
         setSuccessMessage("Your account is ready. Log in to continue.");
       } else {
+        await apiRequest("/users/login", { method: "POST", body: { email, password } });
         router.replace("/dashboard");
       }
     } catch (error) {
-      setErrorMessage(error.message || "Unable to connect. Please try again.");
+      setErrorMessage(error.message);
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12 text-neutral-900">
+    <main className="flex min-h-[calc(100svh-4rem)] items-center justify-center bg-neutral-50 px-4 py-12 text-neutral-900">
       <section className="w-full max-w-md">
-        <Link href="/" aria-label="Relay home" className="mx-auto mb-8 flex w-fit items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-indigo-600" />
-          <span className="text-lg font-semibold tracking-tight">Relay</span>
-        </Link>
-
         <div className="rounded-2xl border border-neutral-200 bg-white p-7 shadow-sm sm:p-9">
           <header className="mb-8">
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -95,20 +71,20 @@ export default function LoginPage() {
             {isSignUp && (
               <div>
                 <label htmlFor="username" className="mb-2 block text-sm font-medium">
-                  Name
+                  Username
                 </label>
                 <input
                   id="username"
                   name="username"
                   type="text"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  autoComplete="name"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  autoComplete="username"
                   required
                   minLength={3}
                   maxLength={20}
                   className="h-11 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15"
-                  placeholder="Your name"
+                  placeholder="3–20 characters, used to find you"
                 />
               </div>
             )}
