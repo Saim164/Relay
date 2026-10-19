@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "../lib/api.js";
+import { socket } from "../lib/socket.js";
 
 export default function ConversationChat({ conversationId, otherUsername, currentUserId, onMessageSent }) {
   const router = useRouter();
@@ -45,6 +46,27 @@ export default function ConversationChat({ conversationId, otherUsername, curren
 
     return () => controller.abort();
   }, [messagesPath, router]);
+
+  useEffect(() => {
+    function handleNewMessage({ message }) {
+      if (message.conversationId !== conversationId) return;
+      setMessages((current) => mergeMessages(current, [message]));
+    }
+
+    function catchUp() {
+      apiRequest(messagesPath)
+        .then((result) => setMessages((current) => mergeMessages(current, result.messages)))
+        .catch(() => {});
+    }
+
+    socket.on("message:new", handleNewMessage);
+    socket.io.on("reconnect", catchUp);
+
+    return () => {
+      socket.off("message:new", handleNewMessage);
+      socket.io.off("reconnect", catchUp);
+    };
+  }, [conversationId, messagesPath]);
 
   useLayoutEffect(() => {
     const box = scrollBoxRef.current;
@@ -88,7 +110,7 @@ export default function ConversationChat({ conversationId, otherUsername, curren
         method: "POST",
         body: { text: messageText },
       });
-      setMessages((current) => [...current, message]);
+      setMessages((current) => mergeMessages(current, [message]));
       setText("");
       onMessageSent(message);
     } catch (error) {
@@ -201,4 +223,9 @@ export default function ConversationChat({ conversationId, otherUsername, curren
       </form>
     </section>
   );
+}
+
+function mergeMessages(current, incoming) {
+  const byId = new Map([...current, ...incoming].map((message) => [message.id, message]));
+  return [...byId.values()].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 }

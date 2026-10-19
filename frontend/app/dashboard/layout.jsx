@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import DashboardSidebar from "../../components/DashboardSidebar.jsx";
 import { DashboardContext } from "../../components/DashboardContext.js";
 import { apiRequest } from "../../lib/api.js";
+import { socket } from "../../lib/socket.js";
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
@@ -41,26 +42,42 @@ export default function DashboardLayout({ children }) {
     return () => controller.abort();
   }, [router]);
 
+  useEffect(() => {
+    if (status !== "ready") return;
+
+    function handleNewMessage({ message, conversation }) {
+      setChats((current) => ({
+        ...current,
+        items: withLastMessage(withChat(current.items, conversation), conversation.id, message),
+      }));
+    }
+
+    function reloadChats() {
+      apiRequest("/conversations")
+        .then(({ conversations }) => setChats({ items: conversations, loading: false, error: "" }))
+        .catch(() => {});
+    }
+
+    socket.on("message:new", handleNewMessage);
+    socket.io.on("reconnect", reloadChats);
+    socket.connect();
+
+    return () => {
+      socket.off("message:new", handleNewMessage);
+      socket.io.off("reconnect", reloadChats);
+      socket.disconnect();
+    };
+  }, [status]);
+
   function addChat(chat) {
-    setChats((current) => {
-      if (current.items.some((item) => item.id === chat.id)) return current;
-      return { ...current, items: [chat, ...current.items] };
-    });
+    setChats((current) => ({ ...current, items: withChat(current.items, chat) }));
   }
 
   function updateLastMessage(conversationId, message) {
-    setChats((current) => {
-      const chat = current.items.find((item) => item.id === conversationId);
-      if (!chat) return current;
-
-      const updatedChat = {
-        ...chat,
-        lastMessage: { text: message.text, sender: message.senderId, createdAt: message.createdAt },
-        updatedAt: message.createdAt,
-      };
-      const otherChats = current.items.filter((item) => item.id !== conversationId);
-      return { ...current, items: [updatedChat, ...otherChats] };
-    });
+    setChats((current) => ({
+      ...current,
+      items: withLastMessage(current.items, conversationId, message),
+    }));
   }
 
   if (status === "loading") {
@@ -86,6 +103,24 @@ export default function DashboardLayout({ children }) {
       </div>
     </DashboardContext>
   );
+}
+
+function withChat(items, chat) {
+  if (items.some((item) => item.id === chat.id)) return items;
+  return [chat, ...items];
+}
+
+function withLastMessage(items, conversationId, message) {
+  const chat = items.find((item) => item.id === conversationId);
+  if (!chat) return items;
+
+  const updatedChat = {
+    ...chat,
+    lastMessage: { text: message.text, sender: message.senderId, createdAt: message.createdAt },
+    updatedAt: message.createdAt,
+  };
+  const otherChats = items.filter((item) => item.id !== conversationId);
+  return [updatedChat, ...otherChats];
 }
 
 function StatusMessage({ children }) {

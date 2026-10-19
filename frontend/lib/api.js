@@ -1,6 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL
-  ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/api/v1`
-  : null;
+export const API_ORIGIN = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || null;
+const API_URL = API_ORIGIN ? `${API_ORIGIN}/api/v1` : null;
 
 export async function apiRequest(path, { method = "GET", body, signal } = {}) {
   if (!API_URL) throw new Error("API URL is not configured.");
