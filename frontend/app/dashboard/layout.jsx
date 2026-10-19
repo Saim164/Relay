@@ -6,8 +6,6 @@ import DashboardSidebar from "../../components/DashboardSidebar.jsx";
 import { DashboardContext } from "../../components/DashboardContext.js";
 import { apiRequest } from "../../lib/api.js";
 
-// This layout stays mounted while you switch between /dashboard and
-// /dashboard/[conversationId], so the session and chat list load only once.
 export default function DashboardLayout({ children }) {
   const router = useRouter();
   const { conversationId } = useParams();
@@ -43,7 +41,6 @@ export default function DashboardLayout({ children }) {
     return () => controller.abort();
   }, [router]);
 
-  // Called after starting a chat from search. An existing chat keeps its place.
   function addChat(chat) {
     setChats((current) => {
       if (current.items.some((item) => item.id === chat.id)) return current;
@@ -51,8 +48,6 @@ export default function DashboardLayout({ children }) {
     });
   }
 
-  // Called after sending: refresh that chat's preview and move it to the top
-  // (the list is newest activity first, like the backend's order).
   function updateLastMessage(conversationId, message) {
     setChats((current) => {
       const chat = current.items.find((item) => item.id === conversationId);
@@ -75,7 +70,6 @@ export default function DashboardLayout({ children }) {
     return <StatusMessage>Could not verify your session. Please try again.</StatusMessage>;
   }
 
-  // On small screens show either the chat list or the open chat, not both.
   return (
     <DashboardContext value={{ user, chats: chats.items, updateLastMessage }}>
       <div className="flex h-[calc(100svh-4rem)]">

@@ -10,7 +10,6 @@ export default function ConversationPage() {
   const chat = chats.find((item) => item.id === conversationId);
 
   return (
-    // key: start with fresh state (messages, input) for each chat.
     <ConversationChat
       key={conversationId}
       conversationId={conversationId}

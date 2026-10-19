@@ -7,7 +7,6 @@ import { apiRequest } from "../lib/api.js";
 
 const MIN_SEARCH_LENGTH = 3;
 
-// The chat list itself is owned by app/dashboard/layout.jsx; this component only shows it.
 export default function DashboardSidebar({ chats, activeConversationId, onChatStarted }) {
   const router = useRouter();
   const [username, setUsername] = useState("");

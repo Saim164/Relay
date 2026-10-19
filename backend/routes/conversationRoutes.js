@@ -10,7 +10,6 @@ const {
     listMessagesSchema,
 } = require("../middleware/validation.js");
 
-// Every conversation route needs a logged-in user.
 router.use(authenticate);
 
 router.get("/", listConversations);

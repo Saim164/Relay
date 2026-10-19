@@ -3,7 +3,6 @@ const conversationRepository = require("../repositories/conversationRepository.j
 const userRepository = require("../repositories/userRepository.js");
 const createError = require("../utils/createError.js");
 
-// The same two users always produce the same key, whatever the order.
 const makeParticipantsKey = (a, b) => [String(a), String(b)].sort().join("_");
 
 const toPublicConversation = (conversation, myId) => {
@@ -42,8 +41,6 @@ const startConversation = async (myId, otherUserId) => {
                 participantsKey,
             });
         } catch (error) {
-            // Both users clicked "start chat" at the same moment: the other request
-            // created it first, so just load that one.
             if (error.code !== 11000) {
                 throw error;
             }
@@ -59,8 +56,6 @@ const getUserConversations = async (myId) => {
     return conversations.map((conversation) => toPublicConversation(conversation, myId));
 };
 
-// Returns 404 (not 403) when the user isn't a participant, so nobody can tell
-// whether someone else's conversation id exists.
 const getConversationForUser = async (conversationId, userId) => {
     if (!mongoose.isObjectIdOrHexString(conversationId)) {
         throw createError("Conversation not found", 404);

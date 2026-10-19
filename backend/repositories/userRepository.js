@@ -1,12 +1,10 @@
 const User = require("../models/userModel.js");
 
-// Includes the password hash: only use this for checking a login.
 const findByEmail = (email) => User.findOne({ email });
 
 const findPublicById = (id) => User.findById(id).select("-password");
 
 const searchByUsername = (username, excludedUserId) => {
-    // Escape regex characters so a search like "a.b" matches literally.
     const escapedUsername = username.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     return User.find({

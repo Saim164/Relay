@@ -3,9 +3,6 @@ const userService = require("../services/userService.js");
 
 const isProduction = process.env.NODE_ENV === "production";
 
-// In production the frontend (Vercel) and API (Render) are on different sites,
-// so the cookie must be SameSite=None, which browsers only accept with Secure.
-// Logout must clear the cookie with these same options or the browser keeps it.
 const authCookieOptions = {
     httpOnly: true,
     secure: isProduction,

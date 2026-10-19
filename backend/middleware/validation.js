@@ -1,7 +1,6 @@
 const { z } = require("zod");
 const createError = require("../utils/createError.js");
 
-// A missing or non-string field gets the same friendly message everywhere.
 const requiredString = () => z.string({ error: "All fields are required" });
 
 const registerSchema = z.object({
@@ -54,8 +53,6 @@ const listMessagesSchema = z.object({
         .default(30),
 });
 
-// Validates req[source] and stores the cleaned data on req.validatedBody / req.validatedQuery.
-// (Express 5 doesn't allow overwriting req.query, so we use separate properties.)
 const validate = (schema, source, target) => (req, res, next) => {
     const result = schema.safeParse(req[source] ?? {});
 

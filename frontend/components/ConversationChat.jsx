@@ -8,13 +8,11 @@ import { apiRequest } from "../lib/api.js";
 export default function ConversationChat({ conversationId, otherUsername, currentUserId, onMessageSent }) {
   const router = useRouter();
   const scrollBoxRef = useRef(null);
-  // After loading older messages we keep the view where it was (measured from the bottom).
-  // Otherwise (first load, sending) we scroll to the newest message.
   const keepDistanceFromBottomRef = useRef(null);
 
   const [messages, setMessages] = useState([]);
   const [hasMore, setHasMore] = useState(false);
-  const [status, setStatus] = useState("loading"); // "loading" | "ready" | "not-found" | "error"
+  const [status, setStatus] = useState("loading");
   const [loadError, setLoadError] = useState("");
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
   const [olderError, setOlderError] = useState("");
@@ -48,7 +46,6 @@ export default function ConversationChat({ conversationId, otherUsername, curren
     return () => controller.abort();
   }, [messagesPath, router]);
 
-  // Runs after the DOM updates but before the browser paints, so there's no visible jump.
   useLayoutEffect(() => {
     const box = scrollBoxRef.current;
     if (!box) return;

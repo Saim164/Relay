@@ -28,11 +28,9 @@ const sendMessage = async (conversationId, senderId, text) => {
     return toPublicMessage(message);
 };
 
-// Returns up to `limit` messages older than `before`, oldest first.
 const getMessages = async (conversationId, userId, { before, limit }) => {
     await getConversationForUser(conversationId, userId);
 
-    // Fetch one extra message: if it exists, there are older messages to load.
     const newestFirst = await messageRepository.findByConversation(conversationId, {
         before,
         limit: limit + 1,

@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const userRepository = require("../repositories/userRepository.js");
 const createError = require("../utils/createError.js");
 
-// Accepts the HTTP-only "token" cookie, or an "Authorization: Bearer <token>" header.
 const authenticate = async (req, res, next) => {
     const authorization = req.headers.authorization;
     const headerToken = authorization?.startsWith("Bearer ")
