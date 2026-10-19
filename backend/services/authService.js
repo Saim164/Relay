@@ -29,4 +29,17 @@ const login = async ({ email, password }) => {
     return { token, user: toPublicUser(user) };
 };
 
-module.exports = { register, login };
+const getUserFromToken = async (token) => {
+    if (!token) return null;
+
+    let payload;
+    try {
+        payload = jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+        return null;
+    }
+
+    return userRepository.findPublicById(payload.id);
+};
+
+module.exports = { register, login, getUserFromToken };
