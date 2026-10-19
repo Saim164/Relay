@@ -73,4 +73,9 @@ const getConversationForUser = async (conversationId, userId) => {
     return conversation;
 };
 
-module.exports = { startConversation, getUserConversations, getConversationForUser };
+module.exports = {
+    startConversation,
+    getUserConversations,
+    getConversationForUser,
+    toPublicConversation,
+};

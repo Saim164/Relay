@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+const http = require("http");
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -10,6 +11,7 @@ const conversationRoutes = require("./routes/conversationRoutes.js");
 const { apiLimiter } = require("./middleware/rateLimiters.js");
 const errorHandler = require("./middleware/errorHandler.js");
 const createError = require("./utils/createError.js");
+const { initSocket } = require("./socket.js");
 
 if (!process.env.MONGO_URL || !process.env.JWT_SECRET) {
   throw new Error("MONGO_URL and JWT_SECRET must be set");
@@ -50,7 +52,10 @@ const start = async () => {
     await mongoose.connect(process.env.MONGO_URL);
     console.log("Connected to MongoDB");
 
-    app.listen(port, () => {
+    const server = http.createServer(app);
+    initSocket(server, allowedOrigins);
+
+    server.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });
   } catch (error) {
