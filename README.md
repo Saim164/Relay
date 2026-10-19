@@ -20,7 +20,7 @@ Relay is a portfolio and learning project focused on building a modern messaging
 
 1. Copy `backend/.env.example` to `backend/.env` and fill in `MONGO_URL` and `JWT_SECRET`.
 2. In `backend/`, install dependencies and run `npm run dev`.
-3. Copy `frontend/.env.example` to `frontend/.env.local` (`NEXT_PUBLIC_API_URL=http://localhost:5000`).
+3. Copy `frontend/.env.example` to `frontend/.env.local` (`BACKEND_URL` and `NEXT_PUBLIC_SOCKET_URL`, both `http://localhost:5000`).
 4. In `frontend/`, install dependencies and run `npm run dev`.
 5. Open `http://localhost:3000`.
 
@@ -31,4 +31,4 @@ All routes are under `/api/v1`: `/api/v1/users/...` for accounts and search, `/a
 ## Deploying
 
 - **Backend (Render):** set `MONGO_URL`, `JWT_SECRET`, `NODE_ENV=production`, and `CLIENT_URL` to your Vercel URL. `CLIENT_URL` can be a comma-separated list, e.g. `https://your-app.vercel.app,http://localhost:3000`. Render provides `PORT`.
-- **Frontend (Vercel):** set `NEXT_PUBLIC_API_URL` to the Render URL (origin only, e.g. `https://your-api.onrender.com`).
+- **Frontend (Vercel):** set `BACKEND_URL` and `NEXT_PUBLIC_SOCKET_URL` to the Render URL (origin only, e.g. `https://your-api.onrender.com`), then redeploy. Don't set `NEXT_PUBLIC_API_URL`: HTTP requests go through the Next.js proxy (`/api/v1` → `BACKEND_URL`, see `next.config.mjs`), so the login cookie belongs to the frontend's domain. The socket connects straight to Render and logs in with a short-lived ticket from `GET /api/v1/users/socket-token`.

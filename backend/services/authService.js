@@ -5,6 +5,7 @@ const { toPublicUser } = require("./userService.js");
 const createError = require("../utils/createError.js");
 
 const TOKEN_LIFETIME = "3d";
+const SOCKET_TOKEN_LIFETIME = "1m";
 const SALT_ROUNDS = 10;
 const DUMMY_PASSWORD_HASH = "$2b$10$bskAnezvMFXjG/C7hfoVgezCTmiZMzIgouHpDF.qdwaJkuUvV6s4.";
 
@@ -29,7 +30,13 @@ const login = async ({ email, password }) => {
     return { token, user: toPublicUser(user) };
 };
 
-const getUserFromToken = async (token) => {
+const createSocketToken = (userId) => jwt.sign(
+    { id: userId, purpose: "socket" },
+    process.env.JWT_SECRET,
+    { expiresIn: SOCKET_TOKEN_LIFETIME }
+);
+
+const getUserFromToken = async (token, purpose) => {
     if (!token) return null;
 
     let payload;
@@ -39,7 +46,9 @@ const getUserFromToken = async (token) => {
         return null;
     }
 
+    if (payload.purpose !== purpose) return null;
+
     return userRepository.findPublicById(payload.id);
 };
 
-module.exports = { register, login, getUserFromToken };
+module.exports = { register, login, createSocketToken, getUserFromToken };

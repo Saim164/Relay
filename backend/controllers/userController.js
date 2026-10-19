@@ -38,4 +38,9 @@ const searchUsers = async (req, res) => {
     return res.status(200).json({ users });
 };
 
-module.exports = { register, login, logout, getCurrentUser, searchUsers };
+const getSocketToken = (req, res) => {
+    const token = authService.createSocketToken(req.user._id);
+    return res.status(200).json({ token });
+};
+
+module.exports = { register, login, logout, getCurrentUser, searchUsers, getSocketToken };

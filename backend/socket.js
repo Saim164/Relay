@@ -1,18 +1,16 @@
 const { Server } = require("socket.io");
-const { parseCookie } = require("cookie");
 const { getUserFromToken } = require("./services/authService.js");
 
 let io = null;
 
 const initSocket = (httpServer, allowedOrigins) => {
   io = new Server(httpServer, {
-    cors: { origin: allowedOrigins, credentials: true },
+    cors: { origin: allowedOrigins },
   });
 
   io.use(async (socket, next) => {
     try {
-      const cookies = parseCookie(socket.handshake.headers.cookie || "");
-      const user = await getUserFromToken(cookies.token);
+      const user = await getUserFromToken(socket.handshake.auth?.token, "socket");
       if (!user) {
         return next(new Error("Authentication required"));
       }

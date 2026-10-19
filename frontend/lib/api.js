@@ -1,9 +1,10 @@
+// The backend's address. Leave NEXT_PUBLIC_API_URL unset to go through
+// the Next.js proxy (/api/v1 → BACKEND_URL), which keeps the login cookie
+// first-party so Safari doesn't block it.
 export const API_ORIGIN = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || null;
-const API_URL = API_ORIGIN ? `${API_ORIGIN}/api/v1` : null;
+const API_URL = API_ORIGIN ? `${API_ORIGIN}/api/v1` : "/api/v1";
 
 export async function apiRequest(path, { method = "GET", body, signal } = {}) {
-  if (!API_URL) throw new Error("API URL is not configured.");
-
   const response = await fetch(`${API_URL}${path}`, {
     method,
     signal,
