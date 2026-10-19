@@ -8,7 +8,8 @@ Relay is a portfolio and learning project focused on building a modern messaging
 - Authenticated username search
 - One-to-one conversations
 - Text message history and sending
-- A protected dashboard with a conversation sidebar
+- A protected dashboard with a conversation sidebar; each chat has its own URL (`/dashboard/<conversationId>`)
+- Loading older messages
 
 ## Project structure
 
@@ -17,10 +18,17 @@ Relay is a portfolio and learning project focused on building a modern messaging
 
 ## Run locally
 
-1. Configure the backend environment with `MONGO_URL`, `JWT_SECRET`, and `CLIENT_URL`.
+1. Copy `backend/.env.example` to `backend/.env` and fill in `MONGO_URL` and `JWT_SECRET`.
 2. In `backend/`, install dependencies and run `npm run dev`.
-3. Set `NEXT_PUBLIC_API_URL=http://localhost:5000` in `frontend/.env.local`.
+3. Copy `frontend/.env.example` to `frontend/.env.local` (`NEXT_PUBLIC_API_URL=http://localhost:5000`).
 4. In `frontend/`, install dependencies and run `npm run dev`.
 5. Open `http://localhost:3000`.
 
-The frontend uses `/api/v1/users` for account and user routes. Conversation routes are currently mounted at `/api/conversations`.
+## API
+
+All routes are under `/api/v1`: `/api/v1/users/...` for accounts and search, `/api/v1/conversations/...` for chats and messages. `GET /` returns a "Relay API is running" message.
+
+## Deploying
+
+- **Backend (Render):** set `MONGO_URL`, `JWT_SECRET`, `NODE_ENV=production`, and `CLIENT_URL` to your Vercel URL. `CLIENT_URL` can be a comma-separated list, e.g. `https://your-app.vercel.app,http://localhost:3000`. Render provides `PORT`.
+- **Frontend (Vercel):** set `NEXT_PUBLIC_API_URL` to the Render URL (origin only, e.g. `https://your-api.onrender.com`).
