@@ -1,6 +1,9 @@
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
 
 const nextConfig = {
+  env: {
+    SOCKET_URL: BACKEND_URL,
+  },
   experimental: {
     agentFeedback: true,
   },

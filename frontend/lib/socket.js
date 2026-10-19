@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import { API_ORIGIN, apiRequest } from "./api.js";
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || API_ORIGIN || "http://localhost:5000";
+const SOCKET_URL = API_ORIGIN || process.env.SOCKET_URL;
 
 export const socket = io(SOCKET_URL, {
   autoConnect: false,
