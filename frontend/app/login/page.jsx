@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import FormField from "../../components/FormField.jsx";
 import { apiRequest } from "../../lib/api.js";
+
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 20;
+const PASSWORD_MIN_LENGTH = 8;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -69,60 +74,42 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {isSignUp && (
-              <div>
-                <label htmlFor="username" className="mb-2 block text-sm font-medium">
-                  Username
-                </label>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  value={username}
-                  onChange={(event) => setUsername(event.target.value)}
-                  autoComplete="username"
-                  required
-                  minLength={3}
-                  maxLength={20}
-                  className="h-11 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15"
-                  placeholder="3–20 characters, used to find you"
-                />
-              </div>
+              <FormField
+                id="username"
+                label="Username"
+                type="text"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                autoComplete="username"
+                required
+                minLength={USERNAME_MIN_LENGTH}
+                maxLength={USERNAME_MAX_LENGTH}
+                placeholder="3–20 characters, used to find you"
+              />
             )}
 
-            <div>
-              <label htmlFor="email" className="mb-2 block text-sm font-medium">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                autoComplete="email"
-                required
-                className="h-11 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15"
-                placeholder="you@example.com"
-              />
-            </div>
+            <FormField
+              id="email"
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              autoComplete="email"
+              required
+              placeholder="you@example.com"
+            />
 
-            <div>
-              <label htmlFor="password" className="mb-2 block text-sm font-medium">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                autoComplete={isSignUp ? "new-password" : "current-password"}
-                required
-                minLength={isSignUp ? 8 : undefined}
-                className="h-11 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15"
-                placeholder="Enter your password"
-              />
-            </div>
+            <FormField
+              id="password"
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete={isSignUp ? "new-password" : "current-password"}
+              required
+              minLength={isSignUp ? PASSWORD_MIN_LENGTH : undefined}
+              placeholder="Enter your password"
+            />
 
             <button
               type="submit"
