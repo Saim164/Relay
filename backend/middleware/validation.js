@@ -43,10 +43,19 @@ const startConversationSchema = z.object({
 });
 
 const sendMessageSchema = z.object({
-    text: requiredString()
+    text: z.string({ error: "Message text must be text" })
         .trim()
-        .min(1, "Message text cannot be empty")
-        .max(2000, "Message text must be 2000 characters or fewer"),
+        .max(2000, "Message text must be 2000 characters or fewer")
+        .optional(),
+    attachment: z.object({
+        publicId: requiredString().min(1, REQUIRED_MESSAGE),
+        name: requiredString()
+            .trim()
+            .min(1, "File name is required")
+            .max(200, "File name must be 200 characters or fewer"),
+    }, { error: "Attachment must be an object" }).optional(),
+}).refine((message) => message.text || message.attachment, {
+    error: "Message text cannot be empty",
 });
 
 const listMessagesSchema = z.object({

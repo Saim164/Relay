@@ -1,6 +1,7 @@
 const conversationRepository = require("../repositories/conversationRepository.js");
 const messageRepository = require("../repositories/messageRepository.js");
 const { getConversationForUser, toPublicConversation } = require("./conversationService.js");
+const { verifyAttachment } = require("./attachmentService.js");
 const { SOCKET_EVENTS, notifyUser } = require("../socket.js");
 
 const toPublicMessage = (message) => ({
@@ -8,20 +9,34 @@ const toPublicMessage = (message) => ({
     conversationId: String(message.conversation),
     senderId: String(message.sender),
     text: message.text,
+    attachment: message.attachment
+        ? {
+            url: message.attachment.url,
+            name: message.attachment.name,
+            type: message.attachment.type,
+            size: message.attachment.size,
+        }
+        : null,
     createdAt: message.createdAt,
 });
 
-const sendMessage = async (conversationId, senderId, text) => {
+const previewText = (message) => message.text || `📎 ${message.attachment.name}`;
+
+const sendMessage = async (conversationId, senderId, { text, attachment }) => {
     const conversation = await getConversationForUser(conversationId, senderId);
+    const verifiedAttachment = attachment
+        ? await verifyAttachment(conversationId, attachment)
+        : undefined;
 
     const message = await messageRepository.create({
         conversation: conversationId,
         sender: senderId,
-        text,
+        text: text || undefined,
+        attachment: verifiedAttachment,
     });
 
     await conversationRepository.updateLastMessage(conversationId, {
-        text: message.text,
+        text: previewText(message),
         sender: senderId,
         createdAt: message.createdAt,
     });
