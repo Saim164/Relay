@@ -14,15 +14,15 @@ const createError = require("./utils/createError.js");
 const { initSocket } = require("./socket.js");
 
 if (!process.env.MONGO_URL || !process.env.JWT_SECRET) {
-  throw new Error("MONGO_URL and JWT_SECRET must be set");
+    throw new Error("MONGO_URL and JWT_SECRET must be set");
 }
 
 const port = process.env.PORT || 5000;
 
 const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:3000")
-  .split(",")
-  .map((origin) => origin.trim().replace(/\/$/, ""))
-  .filter(Boolean);
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/$/, ""))
+    .filter(Boolean);
 
 const app = express();
 
@@ -34,7 +34,7 @@ app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-  res.status(200).json({ message: "Relay API is running" });
+    res.status(200).json({ message: "Relay API is running" });
 });
 
 app.use("/api", apiLimiter);
@@ -42,26 +42,26 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/conversations", conversationRoutes);
 
 app.use((req, res, next) => {
-  next(createError("Route not found", 404));
+    next(createError("Route not found", 404));
 });
 
 app.use(errorHandler);
 
 const start = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URL);
-    console.log("Connected to MongoDB");
+    try {
+        await mongoose.connect(process.env.MONGO_URL);
+        console.log("Connected to MongoDB");
 
-    const server = http.createServer(app);
-    initSocket(server, allowedOrigins);
+        const server = http.createServer(app);
+        initSocket(server, allowedOrigins);
 
-    server.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
-    });
-  } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
-    process.exit(1);
-  }
+        server.listen(port, () => {
+            console.log(`Server is running on port ${port}`);
+        });
+    } catch (error) {
+        console.error("Error connecting to MongoDB:", error);
+        process.exit(1);
+    }
 };
 
 start();
