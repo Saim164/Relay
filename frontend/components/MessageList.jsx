@@ -1,4 +1,5 @@
 import ErrorText from "./ErrorText.jsx";
+import { formatFileSize, isImage } from "../lib/attachments.js";
 
 export default function MessageList({ scrollBoxRef, chat, currentUserId }) {
   return (
@@ -43,7 +44,7 @@ function MessageListContent({ chat, currentUserId }) {
         {chat.messages.map((message) => (
           <MessageBubble
             key={message.id}
-            text={message.text}
+            message={message}
             isMine={message.senderId === String(currentUserId)}
           />
         ))}
@@ -52,18 +53,47 @@ function MessageListContent({ chat, currentUserId }) {
   );
 }
 
-function MessageBubble({ text, isMine }) {
+function MessageBubble({ message, isMine }) {
   return (
     <li className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-      <p
-        className={`max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-6 ${
+      <div
+        className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-6 ${
           isMine
             ? "rounded-br-md bg-neutral-900 text-white"
             : "rounded-bl-md bg-neutral-100 text-neutral-900"
         }`}
       >
-        {text}
-      </p>
+        {message.attachment && <Attachment attachment={message.attachment} />}
+        {message.text && (
+          <p className={`whitespace-pre-wrap break-words ${message.attachment ? "mt-2" : ""}`}>
+            {message.text}
+          </p>
+        )}
+      </div>
     </li>
+  );
+}
+
+function Attachment({ attachment }) {
+  if (isImage(attachment.type)) {
+    return (
+      <a href={attachment.url} target="_blank" rel="noopener noreferrer">
+        {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary already serves the image */}
+        <img src={attachment.url} alt={attachment.name} className="max-h-64 max-w-full rounded-lg" />
+      </a>
+    );
+  }
+
+  return (
+    <a
+      href={attachment.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 underline-offset-4 hover:underline"
+    >
+      <span aria-hidden="true">📄</span>
+      <span className="min-w-0 truncate">{attachment.name}</span>
+      <span className="shrink-0 text-xs opacity-70">{formatFileSize(attachment.size)}</span>
+    </a>
   );
 }

@@ -13,8 +13,8 @@ export default function ConversationChat({ conversationId, otherUsername, curren
     return <ChatNotFound />;
   }
 
-  async function handleSend(text) {
-    const message = await chat.sendMessage(text);
+  async function handleSend(draft) {
+    const message = await chat.sendMessage(draft);
     if (!message) return false;
     onMessageSent(message);
     return true;
@@ -39,6 +39,7 @@ export default function ConversationChat({ conversationId, otherUsername, curren
       <MessageComposer
         onSend={handleSend}
         isSending={chat.isSending}
+        uploadProgress={chat.uploadProgress}
         isDisabled={chat.status !== "ready"}
       />
     </section>

@@ -68,6 +68,10 @@ export function useChats(isEnabled) {
   return { chats, addChat, updateLastMessage };
 }
 
+function previewText(message) {
+  return message.text || `📎 ${message.attachment.name}`;
+}
+
 function withChat(items, chat) {
   if (items.some((item) => item.id === chat.id)) return items;
   return [chat, ...items];
@@ -79,7 +83,7 @@ function withLastMessage(items, conversationId, message) {
 
   const updatedChat = {
     ...chat,
-    lastMessage: { text: message.text, sender: message.senderId, createdAt: message.createdAt },
+    lastMessage: { text: previewText(message), sender: message.senderId, createdAt: message.createdAt },
     updatedAt: message.createdAt,
   };
   const otherChats = items.filter((item) => item.id !== conversationId);

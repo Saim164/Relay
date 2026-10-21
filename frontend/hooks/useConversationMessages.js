@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { apiRequest } from "../lib/api.js";
 import { SOCKET_EVENTS, socket } from "../lib/socket.js";
+import { uploadAttachment } from "../lib/uploadAttachment.js";
 import { useRedirectIfUnauthorized } from "./useRedirectIfUnauthorized.js";
 
 export function useConversationMessages(conversationId) {
@@ -18,6 +19,7 @@ export function useConversationMessages(conversationId) {
   const [olderError, setOlderError] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(null);
 
   const messagesPath = `/conversations/${conversationId}/messages`;
 
@@ -98,13 +100,19 @@ export function useConversationMessages(conversationId) {
     }
   }
 
-  async function sendMessage(text) {
-    if (!text || isSending) return null;
+  async function sendMessage({ text, file }) {
+    if ((!text && !file) || isSending) return null;
 
     setIsSending(true);
     setSendError("");
     try {
-      const { message } = await apiRequest(messagesPath, { method: "POST", body: { text } });
+      const attachment = file
+        ? await uploadAttachment(conversationId, file, setUploadProgress)
+        : undefined;
+      const { message } = await apiRequest(messagesPath, {
+        method: "POST",
+        body: { text: text || undefined, attachment },
+      });
       setMessages((current) => mergeMessages(current, [message]));
       return message;
     } catch (error) {
@@ -112,6 +120,7 @@ export function useConversationMessages(conversationId) {
       return null;
     } finally {
       setIsSending(false);
+      setUploadProgress(null);
     }
   }
 
@@ -127,6 +136,7 @@ export function useConversationMessages(conversationId) {
     sendMessage,
     isSending,
     sendError,
+    uploadProgress,
   };
 }
 
