@@ -1,5 +1,4 @@
-export const API_ORIGIN = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || null;
-const API_URL = API_ORIGIN ? `${API_ORIGIN}/api/v1` : "/api/v1";
+const API_URL = "/api/v1";
 
 export async function apiRequest(path, { method = "GET", body, signal } = {}) {
   const response = await fetch(`${API_URL}${path}`, {
