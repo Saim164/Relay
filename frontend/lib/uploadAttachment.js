@@ -20,7 +20,6 @@ export async function uploadAttachment(conversationId, file, onProgress) {
   return { publicId: result.public_id, name: file.name };
 }
 
-// fetch can't report upload progress, so this one request uses XMLHttpRequest.
 function sendWithProgress(url, form, onProgress) {
   return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
