@@ -1,7 +1,7 @@
 const conversationRepository = require("../repositories/conversationRepository.js");
 const messageRepository = require("../repositories/messageRepository.js");
 const { getConversationForUser, toPublicConversation } = require("./conversationService.js");
-const { notifyUser } = require("../socket.js");
+const { SOCKET_EVENTS, notifyUser } = require("../socket.js");
 
 const toPublicMessage = (message) => ({
     id: String(message._id),
@@ -29,7 +29,7 @@ const sendMessage = async (conversationId, senderId, text) => {
     const publicMessage = toPublicMessage(message);
 
     conversation.participants.forEach((participant) => {
-        notifyUser(participant._id, "message:new", {
+        notifyUser(participant._id, SOCKET_EVENTS.NEW_MESSAGE, {
             message: publicMessage,
             conversation: toPublicConversation(conversation, participant._id),
         });

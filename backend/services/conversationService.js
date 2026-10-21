@@ -56,6 +56,7 @@ const getUserConversations = async (myId) => {
     return conversations.map((conversation) => toPublicConversation(conversation, myId));
 };
 
+// 404 (not 403) so other people's conversation ids can't be discovered.
 const getConversationForUser = async (conversationId, userId) => {
     if (!mongoose.isObjectIdOrHexString(conversationId)) {
         throw createError("Conversation not found", 404);

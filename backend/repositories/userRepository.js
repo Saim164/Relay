@@ -1,5 +1,7 @@
 const User = require("../models/userModel.js");
 
+const SEARCH_RESULT_LIMIT = 20;
+
 const findByEmail = (email) => User.findOne({ email });
 
 const findPublicById = (id) => User.findById(id).select("-password");
@@ -13,7 +15,7 @@ const searchByUsername = (username, excludedUserId) => {
     })
         .select("_id username")
         .sort({ username: 1 })
-        .limit(20);
+        .limit(SEARCH_RESULT_LIMIT);
 };
 
 const create = (userData) => User.create(userData);

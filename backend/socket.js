@@ -1,5 +1,11 @@
 const { Server } = require("socket.io");
-const { getUserFromToken } = require("./services/authService.js");
+const { getUserFromSocketToken } = require("./services/authService.js");
+
+const SOCKET_EVENTS = {
+    NEW_MESSAGE: "message:new",
+};
+
+const userRoom = (userId) => `user:${userId}`;
 
 let io = null;
 
@@ -8,9 +14,10 @@ const initSocket = (httpServer, allowedOrigins) => {
         cors: { origin: allowedOrigins },
     });
 
+    // The client sends a short-lived ticket from GET /users/socket-token; no ticket, no connection.
     io.use(async (socket, next) => {
         try {
-            const user = await getUserFromToken(socket.handshake.auth?.token, "socket");
+            const user = await getUserFromSocketToken(socket.handshake.auth?.token);
             if (!user) {
                 return next(new Error("Authentication required"));
             }
@@ -23,13 +30,13 @@ const initSocket = (httpServer, allowedOrigins) => {
     });
 
     io.on("connection", (socket) => {
-        socket.join(`user:${socket.data.user._id}`);
+        socket.join(userRoom(socket.data.user._id));
     });
 };
 
 const notifyUser = (userId, event, data) => {
     if (!io) return;
-    io.to(`user:${userId}`).emit(event, data);
+    io.to(userRoom(userId)).emit(event, data);
 };
 
-module.exports = { initSocket, notifyUser };
+module.exports = { SOCKET_EVENTS, initSocket, notifyUser };

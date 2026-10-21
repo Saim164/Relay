@@ -1,13 +1,18 @@
 const { z } = require("zod");
 const createError = require("../utils/createError.js");
 
-const requiredString = () => z.string({ error: "All fields are required" });
+const REQUIRED_MESSAGE = "All fields are required";
+const USERNAME_LENGTH_MESSAGE = "Username must be between 3 and 20 characters";
+const SEARCH_MESSAGE = "Enter a username to search";
+const LIMIT_MESSAGE = "limit must be an integer from 1 to 50";
+
+const requiredString = () => z.string({ error: REQUIRED_MESSAGE });
 
 const registerSchema = z.object({
     username: requiredString()
         .trim()
-        .min(3, "Username must be between 3 and 20 characters")
-        .max(20, "Username must be between 3 and 20 characters"),
+        .min(3, USERNAME_LENGTH_MESSAGE)
+        .max(20, USERNAME_LENGTH_MESSAGE),
     email: requiredString()
         .trim()
         .toLowerCase()
@@ -20,15 +25,15 @@ const loginSchema = z.object({
     email: requiredString()
         .trim()
         .toLowerCase()
-        .min(1, "All fields are required")
+        .min(1, REQUIRED_MESSAGE)
         .email("Enter a valid email address"),
-    password: requiredString().min(1, "All fields are required"),
+    password: requiredString().min(1, REQUIRED_MESSAGE),
 });
 
 const searchUsersSchema = z.object({
-    username: z.string({ error: "Enter a username to search" })
+    username: z.string({ error: SEARCH_MESSAGE })
         .trim()
-        .min(1, "Enter a username to search")
+        .min(1, SEARCH_MESSAGE)
         .max(20, "Search must be 20 characters or fewer"),
 });
 
@@ -43,13 +48,12 @@ const sendMessageSchema = z.object({
         .max(2000, "Message text must be 2000 characters or fewer"),
 });
 
-const limitError = "limit must be an integer from 1 to 50";
 const listMessagesSchema = z.object({
     before: z.coerce.date({ error: "before must be a valid date" }).optional(),
-    limit: z.coerce.number({ error: limitError })
-        .int(limitError)
-        .min(1, limitError)
-        .max(50, limitError)
+    limit: z.coerce.number({ error: LIMIT_MESSAGE })
+        .int(LIMIT_MESSAGE)
+        .min(1, LIMIT_MESSAGE)
+        .max(50, LIMIT_MESSAGE)
         .default(30),
 });
 

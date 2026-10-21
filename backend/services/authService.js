@@ -6,7 +6,9 @@ const createError = require("../utils/createError.js");
 
 const TOKEN_LIFETIME = "3d";
 const SOCKET_TOKEN_LIFETIME = "1m";
+const SOCKET_TOKEN_PURPOSE = "socket";
 const SALT_ROUNDS = 10;
+// Compared when the email is unknown, so both login failures take the same time.
 const DUMMY_PASSWORD_HASH = "$2b$10$bskAnezvMFXjG/C7hfoVgezCTmiZMzIgouHpDF.qdwaJkuUvV6s4.";
 
 const register = async ({ username, email, password }) => {
@@ -31,7 +33,7 @@ const login = async ({ email, password }) => {
 };
 
 const createSocketToken = (userId) => jwt.sign(
-    { id: userId, purpose: "socket" },
+    { id: userId, purpose: SOCKET_TOKEN_PURPOSE },
     process.env.JWT_SECRET,
     { expiresIn: SOCKET_TOKEN_LIFETIME }
 );
@@ -51,4 +53,6 @@ const getUserFromToken = async (token, purpose) => {
     return userRepository.findPublicById(payload.id);
 };
 
-module.exports = { register, login, createSocketToken, getUserFromToken };
+const getUserFromSocketToken = (token) => getUserFromToken(token, SOCKET_TOKEN_PURPOSE);
+
+module.exports = { register, login, createSocketToken, getUserFromToken, getUserFromSocketToken };
