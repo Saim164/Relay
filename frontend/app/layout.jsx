@@ -1,5 +1,5 @@
 import "./globals.css";
-import Navbar from "../components/Navbar.js";
+import Navbar from "../components/Navbar.jsx";
 
 export const metadata = {
   title: "Relay",

@@ -16,6 +16,7 @@ const nextConfig = {
     },
   },
 
+  // Proxying the API keeps the login cookie first-party, which Safari requires.
   async rewrites() {
     return [
       {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { apiRequest } from "../lib/api.js";
+import { primaryButtonClass } from "../lib/styles.js";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -44,15 +45,12 @@ export default function Navbar() {
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+            className={`${primaryButtonClass} disabled:cursor-wait disabled:opacity-60`}
           >
             {isLoggingOut ? "Logging out..." : "Log out"}
           </button>
         ) : (
-          <Link
-            href="/login"
-            className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
-          >
+          <Link href="/login" className={primaryButtonClass}>
             Log in
           </Link>
         )}

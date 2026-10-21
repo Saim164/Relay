@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function Home() {
+export default function HomePage() {
   return (
     <main className="flex min-h-[calc(100svh-4rem)] items-center justify-center px-6 py-20">
       <section className="-mt-10 w-full max-w-3xl text-center">
